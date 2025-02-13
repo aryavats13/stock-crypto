@@ -1,0 +1,104 @@
+/* Global Styles */
+body {
+    color: #E0E0E0;
+    background-color: #121212;
+    font-family: 'Roboto', sans-serif;
+}
+
+.stApp {
+    background-color: #121212;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: #BB86FC;
+}
+
+.main-title {
+    font-size: 3rem !important;
+    color: #03DAC6;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.stock-title {
+    font-size: 2.5rem !important;
+    color: #03DAC6;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Layout */
+.intro-box {
+    background-color: #d4d2d2;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.spacer {
+    height: 20px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    color: #6C757D;
+}
+
+/* Buttons */
+.stButton > button {
+    background-color: #BB86FC;
+    color: #000000;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+}
+
+.stButton > button:hover {
+    background-color: #3700B3;
+    color: #FFFFFF;
+}
+
+/* Select Box */
+.stSelectbox > div > div {
+    background-color: #7a7878;
+    color: #E0E0E0;
+}
+
+/* DataFrames */
+.dataframe {
+    background-color: #2C2C2C;
+}
+
+/* Prediction Box */
+.prediction-box {
+    background-color: #ab87ff;
+    color: #FFFFFF;
+    padding: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Plots */
+.stPlot {
+    background-color: #1E1E1E;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar */
+.css-1d391kg {
+    background-color: #1E1E1E;
+}
+
+.css-1d391kg .stButton > button {
+    width: 100%;
+}
