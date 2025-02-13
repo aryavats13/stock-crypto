@@ -23,7 +23,7 @@ def home_page():
         if st.button("Analyze Stock", key="analyze_button"):
             st.session_state.stock = selected_stock
             st.session_state.page = 'analysis'
-            st.experimental_rerun()
+            st.rerun()
 
     st.markdown('''
     <div class="footer">
