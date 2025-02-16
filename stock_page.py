@@ -173,8 +173,18 @@ def create_prophet_model(df):
 def show_stock_page(symbol):
     st.title('Stock Analysis and Prediction')
     
-    # Back to home button
-    if st.button('← Back to Home'):
+    # Back to home button with better styling
+    st.markdown("""
+        <style>
+        .back-button {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    if st.button('← Back', key='back_button'):
         st.session_state.page = 'home'
         st.rerun()
     
@@ -182,23 +192,20 @@ def show_stock_page(symbol):
     stock = yf.Ticker(symbol)
     info = stock.info
     
-    # Display company information
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.subheader(f"{info.get('longName', symbol)}")
-        st.write(f"**Sector:** {info.get('sector', 'N/A')}")
-        st.write(f"**Industry:** {info.get('industry', 'N/A')}")
-        if info.get('longBusinessSummary'):
-            st.write("**About:**")
-            st.write(info['longBusinessSummary'])
+    # Display minimal company information in a clean layout
+    st.title(f"{info.get('longName', symbol)} ({symbol})")
     
-    with col2:
+    col1, col2, col3 = st.columns(3)
+    with col1:
         st.metric(
-            "Current Price",
+            "Price",
             f"${info.get('currentPrice', 'N/A')}",
             f"{info.get('regularMarketChangePercent', 0):.2f}%"
         )
-        st.metric("Market Cap", f"${info.get('marketCap', 0):,.0f}")
+    with col2:
+        st.metric("Sector", info.get('sector', 'N/A'))
+    with col3:
+        st.metric("52W High", f"${info.get('fiftyTwoWeekHigh', 'N/A')}")
     
     st.divider()
     
@@ -214,22 +221,6 @@ def show_stock_page(symbol):
     
     # Create Prophet forecast
     forecast = create_prophet_model(df)
-    
-    # Display stock info
-    stock = yf.Ticker(symbol)
-    info = stock.info
-    
-    # Company Info Section with improved fonts
-    st.markdown('<h2 style="font-size: 24px; color: white;">Company Information</h2>', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("Current Price", f"${info.get('currentPrice', 'N/A')}", 
-                 f"{info.get('regularMarketChangePercent', 0):.2f}%")
-    with col2:
-        st.metric("Market Cap", f"${info.get('marketCap', 0)/1e9:.2f}B")
-    with col3:
-        st.metric("52 Week High", f"${info.get('fiftyTwoWeekHigh', 'N/A')}")
     
     # Create tabs with improved fonts
     st.markdown("""
