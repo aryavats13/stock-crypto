@@ -265,27 +265,61 @@ def show_stock_page(symbol):
     </style>
     """, unsafe_allow_html=True)
     
-    tabs = st.tabs([" Price Analysis", " Technical Indicators", "Predictions"])
+    tabs = st.tabs(["Price Analysis", "Technical Indicators", "Predictions"])
     
     with tabs[0]:  # Price Analysis Tab
-        st.markdown('<h3 style="font-size: 20px; color: white;">Price Chart & Volume</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size: 20px;">Price Chart & Volume</h3>', unsafe_allow_html=True)
         fig = plot_stock_data(df, symbol)
         st.plotly_chart(fig, use_container_width=True)
         
-        # Key Statistics with improved fonts
-        st.markdown('<h3 style="font-size: 20px; color: white;">Key Statistics</h3>', unsafe_allow_html=True)
-        col1, col2, col3, col4 = st.columns(4)
+        # Key Statistics with improved formatting
+        st.markdown('<h3 style="font-size: 20px;">Key Statistics</h3>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns(3)
+        
         with col1:
-            st.metric("P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}")
+            if is_crypto:
+                volume = info.get('volume24Hr', 0)
+                if isinstance(volume, (int, float)):
+                    st.metric("24h Volume", f"${volume/1e6:.1f}M")
+                else:
+                    st.metric("24h Volume", "N/A")
+            else:
+                pe_ratio = info.get('trailingPE')
+                if isinstance(pe_ratio, (int, float)):
+                    st.metric("P/E Ratio", f"{pe_ratio:.2f}")
+                else:
+                    st.metric("P/E Ratio", "N/A")
+        
         with col2:
-            st.metric("Beta", f"{info.get('beta', 'N/A'):.2f}")
+            if is_crypto:
+                circ_supply = info.get('circulatingSupply', 0)
+                if isinstance(circ_supply, (int, float)):
+                    st.metric("Circulating Supply", f"{circ_supply:,.0f}")
+                else:
+                    st.metric("Circulating Supply", "N/A")
+            else:
+                eps = info.get('trailingEps')
+                if isinstance(eps, (int, float)):
+                    st.metric("EPS", f"${eps:.2f}")
+                else:
+                    st.metric("EPS", "N/A")
+        
         with col3:
-            st.metric("Volume", f"{info.get('volume', 'N/A'):,}")
-        with col4:
-            st.metric("Avg Volume", f"{info.get('averageVolume', 'N/A'):,}")
+            if is_crypto:
+                market_cap = info.get('marketCap', 0)
+                if isinstance(market_cap, (int, float)):
+                    st.metric("Market Cap", f"${market_cap/1e9:.2f}B")
+                else:
+                    st.metric("Market Cap", "N/A")
+            else:
+                dividend_yield = info.get('dividendYield', 0)
+                if isinstance(dividend_yield, (int, float)):
+                    st.metric("Dividend Yield", f"{dividend_yield*100:.2f}%")
+                else:
+                    st.metric("Dividend Yield", "N/A")
     
     with tabs[1]:  # Technical Indicators Tab
-        st.markdown('<h3 style="font-size: 20px; color: white;">Technical Analysis</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size: 20px;">Technical Analysis</h3>', unsafe_allow_html=True)
         
         # Display RSI and MACD charts
         fig_rsi, fig_macd = plot_technical_indicators(df)
@@ -293,7 +327,7 @@ def show_stock_page(symbol):
         st.plotly_chart(fig_macd, use_container_width=True)
     
     with tabs[2]:  # Predictions Tab
-        st.markdown('<h3 style="font-size: 24px; color: white;">25-Day Price Prediction</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size: 24px;">25-Day Price Prediction</h3>', unsafe_allow_html=True)
         
         # Current price and stats
         last_price = df['Close'].iloc[-1]
