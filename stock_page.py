@@ -170,12 +170,40 @@ def create_prophet_model(df):
     
     return forecast
 
-def stock_page():
-    # Set page title with larger font
-    st.markdown('<h1 style="font-size: 36px; color: white;">Stock Analysis</h1>', unsafe_allow_html=True)
+def show_stock_page(symbol):
+    st.title('Stock Analysis and Prediction')
+    
+    # Back to home button
+    if st.button('← Back to Home'):
+        st.session_state.page = 'home'
+        st.rerun()
+    
+    # Get stock data
+    stock = yf.Ticker(symbol)
+    info = stock.info
+    
+    # Display company information
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.subheader(f"{info.get('longName', symbol)}")
+        st.write(f"**Sector:** {info.get('sector', 'N/A')}")
+        st.write(f"**Industry:** {info.get('industry', 'N/A')}")
+        if info.get('longBusinessSummary'):
+            st.write("**About:**")
+            st.write(info['longBusinessSummary'])
+    
+    with col2:
+        st.metric(
+            "Current Price",
+            f"${info.get('currentPrice', 'N/A')}",
+            f"{info.get('regularMarketChangePercent', 0):.2f}%"
+        )
+        st.metric("Market Cap", f"${info.get('marketCap', 0):,.0f}")
+    
+    st.divider()
     
     # Fetch stock data
-    df = fetch_stock_data(st.session_state.stock)
+    df = fetch_stock_data(symbol)
     
     if df.empty:
         st.error("No data found for the selected stock.")
@@ -188,7 +216,7 @@ def stock_page():
     forecast = create_prophet_model(df)
     
     # Display stock info
-    stock = yf.Ticker(st.session_state.stock)
+    stock = yf.Ticker(symbol)
     info = stock.info
     
     # Company Info Section with improved fonts
@@ -217,7 +245,7 @@ def stock_page():
     
     with tabs[0]:  # Price Analysis Tab
         st.markdown('<h3 style="font-size: 20px; color: white;">Price Chart & Volume</h3>', unsafe_allow_html=True)
-        fig = plot_stock_data(df, st.session_state.stock)
+        fig = plot_stock_data(df, symbol)
         st.plotly_chart(fig, use_container_width=True)
         
         # Key Statistics with improved fonts
@@ -328,3 +356,6 @@ def stock_page():
         </p>
     </div>
     """, unsafe_allow_html=True)
+
+def stock_page():
+    show_stock_page(st.session_state.stock)
