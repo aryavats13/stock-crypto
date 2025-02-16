@@ -16,5 +16,5 @@ with open('style.css') as f:
 # Page routing
 if st.session_state.page == 'home':
     home_page()
-elif st.session_state.page == 'analysis':
+else:
     stock_page()

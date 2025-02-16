@@ -5,11 +5,10 @@ def home_page():
     st.markdown('<h1 class="main-title">Stock Market Analysis Platform</h1>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Market Selection Tabs
     st.markdown('<div class="content-container">', unsafe_allow_html=True)
-    tabs = st.tabs(["📈 Stocks", "🪙 Cryptocurrencies"])
+    tabs = st.tabs([" Stocks", " Cryptocurrencies"])
     
-    with tabs[0]:  # Stocks Tab
+    with tabs[0]:  
         st.markdown('<div class="market-container">', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         
@@ -48,7 +47,7 @@ def home_page():
             st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
     
-    with tabs[1]:  # Crypto Tab
+    with tabs[1]:  
         st.markdown('<div class="market-card crypto-market">', unsafe_allow_html=True)
         st.markdown('<h2>Cryptocurrency Market</h2>', unsafe_allow_html=True)
         
@@ -81,17 +80,16 @@ def home_page():
             ''', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Platform Features Section
     st.markdown('<div class="features-section">', unsafe_allow_html=True)
     st.markdown('<h2>Platform Features</h2>', unsafe_allow_html=True)
     
     feature_cols = st.columns(4)
     
     features = [
-        {"icon": "📊", "title": "Real-Time Data"},
-        {"icon": "📈", "title": "Technical Analysis"},
-        {"icon": "🤖", "title": "AI Predictions"},
-        {"icon": "📱", "title": "Mobile Friendly"}
+        {"icon": "", "title": "Real-Time Data"},
+        {"icon": "", "title": "Technical Analysis"},
+        {"icon": "", "title": "AI Predictions"},
+        {"icon": "", "title": "Mobile Friendly"}
     ]
     
     for col, feature in zip(feature_cols, features):
@@ -104,7 +102,6 @@ def home_page():
             ''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Market Insights Section
     st.markdown('<div class="insights-section">', unsafe_allow_html=True)
     st.markdown('<h2>Market Insights</h2>', unsafe_allow_html=True)
     
@@ -136,11 +133,10 @@ def home_page():
             ''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Disclaimer
     st.markdown('''
     <div class="disclaimer">
         <p>This platform provides analysis based on historical data and market trends. 
            Investment decisions should be made with careful consideration of risks involved.</p>
     </div>
     ''', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)  # Close content-container
+    st.markdown('</div>', unsafe_allow_html=True)  
