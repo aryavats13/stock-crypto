@@ -88,20 +88,14 @@ def plot_stock_data(df, symbol):
     
     # Update layout with improved fonts and styling
     fig.update_layout(
-        title=dict(
-            text=f'Stock Price Analysis for {symbol}',
-            font=dict(size=24)
-        ),
-        xaxis=dict(
-            title='Date',
-            title_font=dict(size=14),
-            tickfont=dict(size=12)
-        ),
-        yaxis=dict(
-            title='Price (USD)',
-            title_font=dict(size=14),
-            tickfont=dict(size=12)
-        ),
+        title_text=f'Stock Price Analysis for {symbol}',
+        title_font_size=24,
+        xaxis_title='Date',
+        xaxis_title_font_size=14,
+        xaxis_tickfont_size=12,
+        yaxis_title='Price (USD)',
+        yaxis_title_font_size=14,
+        yaxis_tickfont_size=12,
         showlegend=True,
         template='plotly_dark',
         height=600
