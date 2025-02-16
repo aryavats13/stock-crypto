@@ -26,7 +26,7 @@ def home_page():
             if st.button("Analyze US Stock", key="us_analyze_button"):
                 st.session_state.stock = selected_us_stock
                 st.session_state.page = 'analysis'
-                st.experimental_rerun()
+                st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
@@ -44,7 +44,7 @@ def home_page():
             if st.button("Analyze Indian Stock", key="indian_analyze_button"):
                 st.session_state.stock = selected_indian_stock
                 st.session_state.page = 'analysis'
-                st.experimental_rerun()
+                st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
     
@@ -65,7 +65,7 @@ def home_page():
             if st.button("Analyze Cryptocurrency", key="crypto_analyze_button"):
                 st.session_state.stock = selected_crypto
                 st.session_state.page = 'analysis'
-                st.experimental_rerun()
+                st.rerun()
         
         with col2:
             st.markdown('''
