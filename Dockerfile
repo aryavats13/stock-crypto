@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR ./app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -8,10 +8,11 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY ./requirements.txt ./
+
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY . ./
 
 EXPOSE 8501
 
