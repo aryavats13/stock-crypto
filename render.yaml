@@ -1,9 +1,9 @@
 services:
   - type: web
     name: stock-crypto-app
-    env: docker
-    buildCommand: docker build -t stock-crypto-app ./
-    startCommand: docker run -p 8501:8501 stock-crypto-app
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.9.16
