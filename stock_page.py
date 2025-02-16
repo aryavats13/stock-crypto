@@ -93,13 +93,17 @@ def plot_stock_data(df, symbol):
         ),
         xaxis=dict(
             title=dict(
-                text='Date'
-            )
+                text='Date',
+                font=dict(size=14)
+            ),
+            tickfont=dict(size=12)
         ),
         yaxis=dict(
             title=dict(
-                text='Price (USD)'
-            )
+                text='Price (USD)',
+                font=dict(size=14)
+            ),
+            tickfont=dict(size=12)
         ),
         showlegend=True,
         template='plotly_dark',
