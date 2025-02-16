@@ -89,45 +89,22 @@ def plot_stock_data(df, symbol):
     # Update layout with improved fonts and styling
     fig.update_layout(
         title=dict(
-            text=f'{symbol} Stock Analysis - Last 2 Years',
-            font=dict(size=24, color='white')
-        ),
-        yaxis_title=dict(
-            text='Stock Price ($)',
-            font=dict(size=16, color='white')
-        ),
-        yaxis2=dict(
-            title='Volume',
-            titlefont=dict(size=16, color='white'),
-            tickfont=dict(size=12, color='white'),
-            overlaying='y',
-            side='right'
+            text=f'Stock Price Analysis for {symbol}',
+            font=dict(size=24)
         ),
         xaxis=dict(
             title='Date',
-            titlefont=dict(size=16, color='white'),
-            tickfont=dict(size=12, color='white')
+            title_font=dict(size=14),
+            tickfont=dict(size=12)
         ),
         yaxis=dict(
-            tickfont=dict(size=12, color='white'),
-            tickformat='$,.2f'
+            title='Price (USD)',
+            title_font=dict(size=14),
+            tickfont=dict(size=12)
         ),
-        height=800,
-        template='plotly_dark',
         showlegend=True,
-        legend=dict(
-            font=dict(size=14, color='white'),
-            bgcolor='rgba(0,0,0,0.5)',
-            bordercolor='rgba(255,255,255,0.2)',
-            borderwidth=1,
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01
-        ),
-        margin=dict(l=50, r=50, t=80, b=50),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
+        template='plotly_dark',
+        height=600
     )
     
     return fig
