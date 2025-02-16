@@ -1,36 +1,320 @@
-/* Global Styles */
+/* Global styles */
+:root {
+    --primary-color: #BB86FC;
+    --secondary-color: #03DAC6;
+    --background-dark: #1a1a1a;
+    --text-light: #ffffff;
+    --text-gray: #b0b0b0;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --hover-color: rgba(187, 134, 252, 0.1);
+}
+
+/* Global font settings */
+.stApp {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-light);
+}
+
+/* Container styles */
+.header-container {
+    background: linear-gradient(135deg, rgba(187, 134, 252, 0.1), rgba(3, 218, 198, 0.1));
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Title styles */
+.main-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+h2 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+/* Tab styling */
+.stTabs {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    background: transparent;
+    border-bottom: 1px solid var(--card-border);
+    gap: 2rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    padding: 1rem 2rem;
+    border: none;
+    background: transparent;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Market cards */
+.market-container {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.market-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.market-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary-color);
+}
+
+/* Feature cards */
+.features-section {
+    padding: 2rem 0;
+    margin: 2rem 0;
+    border-top: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Insight cards */
+.insights-section {
+    margin: 2rem 0;
+}
+
+.insight-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+}
+
+.insight-title {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.insight-content {
+    color: var(--text-light);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.insight-meta {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.insight-tag {
+    background: var(--hover-color);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+
+/* Button styling */
+.stButton > button {
+    background: var(--primary-color);
+    color: black;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.stButton > button:hover {
+    background: rgba(187, 134, 252, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Select box styling */
+.stSelectbox > div > div {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 5px;
+    color: var(--text-light);
+}
+
+.stSelectbox > div > div:hover {
+    border-color: var(--primary-color);
+}
+
+/* Disclaimer */
+.disclaimer {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 2rem;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Metrics and charts */
+[data-testid="stMetricValue"] {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+[data-testid="stMetricDelta"] {
+    background: rgba(3, 218, 198, 0.1);
+    border: 1px solid rgba(3, 218, 198, 0.2);
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Chart container */
+[data-testid="stPlotlyChart"] {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+    .market-container {
+        flex-direction: column;
+    }
+    
+    .market-card {
+        width: 100%;
+    }
+    
+    .main-title {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* Dark theme */
 body {
-    color: #E0E0E0;
-    background-color: #121212;
+    color: var(--text-light);
+    background-color: var(--background-dark);
     font-family: 'Roboto', sans-serif;
 }
 
 .stApp {
-    background-color: #121212;
+    background-color: var(--background-dark);
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-    color: #BB86FC;
-}
-
-.main-title {
-    font-size: 3rem !important;
-    color: #03DAC6;
-    text-align: center;
-    margin-bottom: 2rem;
+    color: var(--primary-color);
 }
 
 .stock-title {
-    font-size: 2.5rem !important;
-    color: #03DAC6;
+    font-size: 2.5rem;
+    color: var(--secondary-color);
     text-align: center;
     margin-bottom: 1.5rem;
 }
 
 /* Layout */
 .intro-box {
-    background-color: #d4d2d2;
+    background-color: var(--card-bg);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 30px;
@@ -44,41 +328,32 @@ h1, h2, h3, h4, h5, h6 {
 .footer {
     text-align: center;
     margin-top: 50px;
-    color: #6C757D;
-}
-
-/* Buttons */
-.stButton > button {
-    background-color: #BB86FC;
-    color: #000000;
-    font-weight: bold;
-    border: none;
-    border-radius: 4px;
-    padding: 10px 20px;
-    text-transform: uppercase;
-    transition: background-color 0.3s ease;
-}
-
-.stButton > button:hover {
-    background-color: #3700B3;
-    color: #FFFFFF;
-}
-
-/* Select Box */
-.stSelectbox > div > div {
-    background-color: #7a7878;
-    color: #E0E0E0;
+    color: var(--text-gray);
 }
 
 /* DataFrames */
 .dataframe {
-    background-color: #2C2C2C;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.dataframe th {
+    background-color: var(--card-bg);
+    color: var(--primary-color);
+    padding: 12px;
+}
+
+.dataframe td {
+    padding: 10px;
+    border-bottom: 1px solid var(--card-border);
 }
 
 /* Prediction Box */
 .prediction-box {
-    background-color: #ab87ff;
-    color: #FFFFFF;
+    background-color: var(--primary-color);
+    color: var(--text-light);
     padding: 15px;
     border-radius: 5px;
     font-weight: bold;
@@ -88,7 +363,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Plots */
 .stPlot {
-    background-color: #1E1E1E;
+    background-color: var(--background-dark);
     border-radius: 10px;
     padding: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -96,9 +371,159 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sidebar */
 .css-1d391kg {
-    background-color: #1E1E1E;
+    background-color: var(--background-dark);
 }
 
 .css-1d391kg .stButton > button {
     width: 100%;
+}
+
+/* Market sections */
+.market-section {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.market-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.market-title {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+/* Crypto info styling */
+.crypto-info {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.crypto-info h3 {
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+}
+
+.crypto-info ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.crypto-info li {
+    background: var(--card-bg);
+    margin: 8px 0;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--card-border);
+    transition: all 0.3s ease;
+}
+
+.crypto-info li:hover {
+    background: var(--hover-color);
+    transform: translateX(5px);
+}
+
+/* Quick stats section */
+.quick-stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 30px 0;
+    gap: 15px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.stat-card p {
+    color: var(--text-light);
+    font-size: 0.9em;
+}
+
+/* List styling */
+ul {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+li {
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+}
+
+/* Feature list */
+.feature-list {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.feature-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    color: var(--text-gray);
+    display: flex;
+    align-items: center;
+}
+
+.feature-list li:before {
+    content: "→";
+    color: var(--secondary-color);
+    margin-right: 0.5rem;
+}
+
+/* Chart labels and text */
+.js-plotly-plot text {
+    font-size: 14px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.js-plotly-plot .gtitle {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Make chart axis labels more readable */
+.js-plotly-plot .xtitle, .js-plotly-plot .ytitle {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Make chart legend more readable */
+.js-plotly-plot .legend text {
+    font-size: 14px;
+    font-weight: 500;
 }

@@ -1,189 +1,350 @@
 import streamlit as st
-import numpy as np
-import pandas as pd
 import yfinance as yf
-from keras.models import load_model
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
+import plotly.graph_objects as go
+from prophet import Prophet
+import pandas as pd
 from datetime import datetime, timedelta
+import ta
 
-@st.cache_resource
-def load_model_cached():
-    return load_model('Stock-Prediction-main\stock_prediction_model.keras')
-
-@st.cache_data
-def fetch_stock_data(stock, start, end):
-    return yf.download(stock, start, end)
-
-def preprocess_data(data):
-    data_train = pd.DataFrame(data.Close[0: int(len(data)*0.80)])
-    data_test = pd.DataFrame(data.Close[int(len(data)*0.80): len(data)])
-    scaler = MinMaxScaler(feature_range=(0,1))
-    past_100_days = data_train.tail(100)
-    data_test = pd.concat([past_100_days, data_test], ignore_index=True)
-    data_test_scale = scaler.fit_transform(data_test)
-    return data_test, data_test_scale, scaler
-
-def create_sequences(data, seq_length):
-    x, y = [], []
-    for i in range(seq_length, len(data)):
-        x.append(data[i-seq_length:i])
-        y.append(data[i, 0])
-    return np.array(x), np.array(y)
-
-def show_stock_page():
-    st.title(f'Stock Analysis: {st.session_state.stock}')
-
+def fetch_stock_data(symbol, period='2y'):
     try:
-        model = load_model_cached()
+        stock = yf.Ticker(symbol)
+        df = stock.history(period=period)
+        if df.empty:
+            raise ValueError(f"No data found for symbol {symbol}")
+        return df
     except Exception as e:
-        st.error(f"Error loading the model: {e}")
-        st.stop()
+        st.error(f"Error fetching data for {symbol}: {str(e)}")
+        return pd.DataFrame()
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        start_date = st.date_input("Start Date", datetime(2012, 1, 1))
-    with col2:
-        end_date = st.date_input("End Date", datetime.now())
-    with col3:
-        if st.button("Back to Home"):
-            st.session_state.page = 'home'
-            st.experimental_rerun()
-
-    data = fetch_stock_data(st.session_state.stock, start_date, end_date)
-
-    if data.empty:
-        st.warning("No data available for the selected stock and date range.")
-        st.stop()
-
-    st.subheader('Recent Stock Data')
-    st.dataframe(data.tail())
-
-    data_test, data_test_scale, scaler = preprocess_data(data)
+def calculate_technical_indicators(df):
+    # RSI
+    df['RSI'] = ta.momentum.rsi(df['Close'])
     
-    # Visualizations
-    plot_moving_averages(data)
-    plot_volume_traded(data)
-
-    # Predictions
-    x, y = create_sequences(data_test_scale, 100)
-    predict = model.predict(x)
-    predict = predict * (1/scaler.scale_)
-    y = y * (1/scaler.scale_)
-
-    plot_predictions(data_test, y, predict)
-
-    # 5-day prediction comparison
-    compare_5_day_prediction(data, model, scaler)
-
-    # Future prediction
-    predict_next_day(data, model, scaler)
-
-    # Model performance metrics
-    display_model_performance(y, predict.flatten())
-
-def plot_moving_averages(data):
-    st.subheader('Price vs Moving Averages')
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(data.index, data.Close, label='Close Price')
-    ax.plot(data.index, data.Close.rolling(50).mean(), label='MA50')
-    ax.plot(data.index, data.Close.rolling(100).mean(), label='MA100')
-    ax.plot(data.index, data.Close.rolling(200).mean(), label='MA200')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Price')
-    ax.legend()
-    st.pyplot(fig)
-
-def plot_volume_traded(data):
-    st.subheader('Volume Traded')
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.bar(data.index, data['Volume'], color='blue')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Volume')
-    ax.set_title('Volume Traded')
-    plt.xticks(rotation=45)
-    st.pyplot(fig)
-
-def plot_predictions(data_test, y, predict):
-    st.subheader('Original Price vs Predicted Price')
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(data_test.index[100:], y, 'g', label='Original Price')
-    ax.plot(data_test.index[100:], predict, 'r', label='Predicted Price')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Price')
-    ax.legend()
-    st.pyplot(fig)
-
-def compare_5_day_prediction(data, model, scaler):
+    # MACD
+    macd = ta.trend.MACD(df['Close'])
+    df['MACD'] = macd.macd()
+    df['MACD_Signal'] = macd.macd_signal()
     
-    st.subheader('5-Day Prediction Comparison')
+    # Moving Averages
+    df['MA20'] = df['Close'].rolling(window=20).mean()
+    df['MA50'] = df['Close'].rolling(window=50).mean()
+    df['MA200'] = df['Close'].rolling(window=200).mean()
     
-    # Ensure we have at least 100 days of data
-    if len(data) < 100:
-        st.warning("Not enough historical data for 5-day prediction comparison.")
+    # Bollinger Bands
+    bollinger = ta.volatility.BollingerBands(df['Close'])
+    df['BB_High'] = bollinger.bollinger_hband()
+    df['BB_Low'] = bollinger.bollinger_lband()
+    df['BB_Mid'] = bollinger.bollinger_mavg()
+    
+    return df
+
+def plot_stock_data(df, symbol):
+    fig = go.Figure()
+    
+    # Add candlestick
+    fig.add_trace(
+        go.Candlestick(
+            x=df.index,
+            open=df['Open'],
+            high=df['High'],
+            low=df['Low'],
+            close=df['Close'],
+            name='OHLC',
+            increasing_line_color='#26a69a',
+            decreasing_line_color='#ef5350'
+        )
+    )
+    
+    # Add Moving averages
+    fig.add_trace(go.Scatter(x=df.index, y=df['MA20'], name='MA20', 
+                            line=dict(color='#AB47BC', width=1.5)))
+    fig.add_trace(go.Scatter(x=df.index, y=df['MA50'], name='MA50', 
+                            line=dict(color='#7E57C2', width=1.5)))
+    
+    # Add volume bars
+    colors = ['#ef5350' if row['Open'] - row['Close'] >= 0 else '#26a69a' 
+              for index, row in df.iterrows()]
+    fig.add_trace(
+        go.Bar(
+            x=df.index,
+            y=df['Volume'],
+            name='Volume',
+            marker_color=colors,
+            marker_line_color='rgb(0,0,0)',
+            marker_line_width=0.5,
+            opacity=0.7,
+            yaxis='y2'
+        )
+    )
+    
+    # Add Bollinger Bands
+    fig.add_trace(go.Scatter(x=df.index, y=df['BB_High'], name='BB High', 
+                            line=dict(color='rgba(236, 64, 122, 0.3)', dash='dash')))
+    fig.add_trace(go.Scatter(x=df.index, y=df['BB_Low'], name='BB Low',
+                            line=dict(color='rgba(236, 64, 122, 0.3)', dash='dash')))
+    fig.add_trace(go.Scatter(x=df.index, y=df['BB_Mid'], name='BB Mid',
+                            line=dict(color='rgba(236, 64, 122, 0.8)', dash='dash')))
+    
+    # Update layout with improved fonts and styling
+    fig.update_layout(
+        title=dict(
+            text=f'{symbol} Stock Analysis - Last 2 Years',
+            font=dict(size=24, color='white')
+        ),
+        yaxis_title=dict(
+            text='Stock Price ($)',
+            font=dict(size=16, color='white')
+        ),
+        yaxis2=dict(
+            title='Volume',
+            titlefont=dict(size=16, color='white'),
+            tickfont=dict(size=12, color='white'),
+            overlaying='y',
+            side='right'
+        ),
+        xaxis=dict(
+            title='Date',
+            titlefont=dict(size=16, color='white'),
+            tickfont=dict(size=12, color='white')
+        ),
+        yaxis=dict(
+            tickfont=dict(size=12, color='white'),
+            tickformat='$,.2f'
+        ),
+        height=800,
+        template='plotly_dark',
+        showlegend=True,
+        legend=dict(
+            font=dict(size=14, color='white'),
+            bgcolor='rgba(0,0,0,0.5)',
+            bordercolor='rgba(255,255,255,0.2)',
+            borderwidth=1,
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        margin=dict(l=50, r=50, t=80, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    
+    return fig
+
+def plot_technical_indicators(df):
+    # RSI Plot
+    fig_rsi = go.Figure()
+    fig_rsi.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI',
+                                line=dict(color='#7E57C2', width=2)))
+    fig_rsi.add_hline(y=70, line_dash="dash", line_color="#ef5350")
+    fig_rsi.add_hline(y=30, line_dash="dash", line_color="#26a69a")
+    fig_rsi.update_layout(
+        title='Relative Strength Index (RSI)',
+        height=300,
+        template='plotly_dark',
+        showlegend=True,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis_title='Date',
+        yaxis_title='RSI Value',
+        margin=dict(l=50, r=50, t=80, b=50),
+        font=dict(color='white')
+    )
+    
+    # MACD Plot
+    fig_macd = go.Figure()
+    fig_macd.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD',
+                                 line=dict(color='#AB47BC', width=2)))
+    fig_macd.add_trace(go.Scatter(x=df.index, y=df['MACD_Signal'], name='Signal Line',
+                                 line=dict(color='#26a69a', width=2)))
+    fig_macd.update_layout(
+        title='Moving Average Convergence Divergence (MACD)',
+        height=300,
+        template='plotly_dark',
+        showlegend=True,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis_title='Date',
+        yaxis_title='MACD Value',
+        margin=dict(l=50, r=50, t=80, b=50),
+        font=dict(color='white')
+    )
+    
+    return fig_rsi, fig_macd
+
+def create_prophet_model(df):
+    # Prepare data for Prophet
+    prophet_df = df.reset_index()[['Date', 'Close']]
+    # Remove timezone from dates
+    prophet_df['Date'] = prophet_df['Date'].dt.tz_localize(None)
+    prophet_df.columns = ['ds', 'y']
+    
+    # Create and fit the model
+    model = Prophet(daily_seasonality=True)
+    model.fit(prophet_df)
+    
+    # Create future dates for 25 days
+    future_dates = model.make_future_dataframe(periods=25)
+    forecast = model.predict(future_dates)
+    
+    return forecast
+
+def stock_page():
+    # Set page title with larger font
+    st.markdown('<h1 style="font-size: 36px; color: white;">Stock Analysis</h1>', unsafe_allow_html=True)
+    
+    # Fetch stock data
+    df = fetch_stock_data(st.session_state.stock)
+    
+    if df.empty:
+        st.error("No data found for the selected stock.")
         return
-
-    last_5_days = data.tail(5)
-    dates = last_5_days.index.tolist()
-    actual_prices = last_5_days['Close'].tolist()
-    predicted_prices = []
     
-    for i in range(5):
-        # Use the 100 days prior to each of the last 5 days for prediction
-        last_100_days = data['Close'].iloc[-(105-i):-(5-i)].values.reshape(-1, 1)
-        last_100_days_scaled = scaler.transform(last_100_days)
-        X_test = np.array([last_100_days_scaled])
-        pred_price = model.predict(X_test)
-        pred_price = scaler.inverse_transform(pred_price)
-        predicted_prices.append(pred_price[0][0])
+    # Calculate technical indicators
+    df = calculate_technical_indicators(df)
     
-    comparison_df = pd.DataFrame({
-        'Date': dates,
-        'Actual Close': actual_prices,
-        'Predicted Close': predicted_prices
-    })
+    # Create Prophet forecast
+    forecast = create_prophet_model(df)
     
-    comparison_df['Prediction Error'] = comparison_df['Actual Close'] - comparison_df['Predicted Close']
-    comparison_df['Percentage Error'] = (comparison_df['Prediction Error'] / comparison_df['Actual Close']) * 100
+    # Display stock info
+    stock = yf.Ticker(st.session_state.stock)
+    info = stock.info
     
-    st.dataframe(comparison_df.style.format({
-        'Date': lambda x: x.strftime('%Y-%m-%d'),
-        'Actual Close': '${:.2f}',
-        'Predicted Close': '${:.2f}',
-        'Prediction Error': '${:.2f}',
-        'Percentage Error': '{:.2f}%'
-    }))
-    
-    # Calculate and display average error metrics
-    mae = np.mean(np.abs(comparison_df['Prediction Error']))
-    mape = np.mean(np.abs(comparison_df['Percentage Error']))
-    st.write(f"Mean Absolute Error: ${mae:.2f}")
-    st.write(f"Mean Absolute Percentage Error: {mape:.2f}%")
-    
-
-def predict_next_day(data, model, scaler):
-    st.subheader('Next Day Prediction')
-    last_100_days = data['Close'].tail(100).values.reshape(-1, 1)
-    last_100_days_scaled = scaler.transform(last_100_days)
-    X_test = np.array([last_100_days_scaled])
-    pred_price = model.predict(X_test)
-    pred_price = scaler.inverse_transform(pred_price)
-
-    next_date = data.index[-1] + timedelta(days=1)
-    st.write(f"Predicted closing price for {next_date.date()}: ${pred_price[0][0]:.2f}")
-
-def display_model_performance(y, predict):
-    st.subheader('Model Performance')
-    mse = np.mean((y - predict)**2)
-    rmse = np.sqrt(mse)
-    mae = np.mean(np.abs(y - predict))
-
+    # Company Info Section with improved fonts
+    st.markdown('<h2 style="font-size: 24px; color: white;">Company Information</h2>', unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
-    col1.metric("Mean Squared Error", f"{mse:.4f}")
-    col2.metric("Root Mean Squared Error", f"{rmse:.4f}")
-    col3.metric("Mean Absolute Error", f"{mae:.4f}")
-
-    st.info("Note: These metrics are calculated on the test set. Lower values indicate better performance.")
-
-if __name__ == "__main__":
-    show_stock_page()
+    
+    with col1:
+        st.metric("Current Price", f"${info.get('currentPrice', 'N/A')}", 
+                 f"{info.get('regularMarketChangePercent', 0):.2f}%")
+    with col2:
+        st.metric("Market Cap", f"${info.get('marketCap', 0)/1e9:.2f}B")
+    with col3:
+        st.metric("52 Week High", f"${info.get('fiftyTwoWeekHigh', 'N/A')}")
+    
+    # Create tabs with improved fonts
+    st.markdown("""
+    <style>
+    .stTab {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    tabs = st.tabs([" Price Analysis", " Technical Indicators", "Predictions"])
+    
+    with tabs[0]:  # Price Analysis Tab
+        st.markdown('<h3 style="font-size: 20px; color: white;">Price Chart & Volume</h3>', unsafe_allow_html=True)
+        fig = plot_stock_data(df, st.session_state.stock)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Key Statistics with improved fonts
+        st.markdown('<h3 style="font-size: 20px; color: white;">Key Statistics</h3>', unsafe_allow_html=True)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("P/E Ratio", f"{info.get('trailingPE', 'N/A'):.2f}")
+        with col2:
+            st.metric("Beta", f"{info.get('beta', 'N/A'):.2f}")
+        with col3:
+            st.metric("Volume", f"{info.get('volume', 'N/A'):,}")
+        with col4:
+            st.metric("Avg Volume", f"{info.get('averageVolume', 'N/A'):,}")
+    
+    with tabs[1]:  # Technical Indicators Tab
+        st.markdown('<h3 style="font-size: 20px; color: white;">Technical Analysis</h3>', unsafe_allow_html=True)
+        
+        # Display RSI and MACD charts
+        fig_rsi, fig_macd = plot_technical_indicators(df)
+        st.plotly_chart(fig_rsi, use_container_width=True)
+        st.plotly_chart(fig_macd, use_container_width=True)
+    
+    with tabs[2]:  # Predictions Tab
+        st.markdown('<h3 style="font-size: 24px; color: white;">25-Day Price Prediction</h3>', unsafe_allow_html=True)
+        
+        # Current price and stats
+        last_price = df['Close'].iloc[-1]
+        predicted_price = forecast['yhat'].iloc[-1]
+        upper_price = forecast['yhat_upper'].iloc[-1]
+        lower_price = forecast['yhat_lower'].iloc[-1]
+        price_change = ((predicted_price - last_price) / last_price) * 100
+        
+        # Display predictions in a clean format
+        st.markdown("""
+        <style>
+        .prediction-box {
+            background-color: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .price-text {
+            color: white;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .highlight {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ff9800;
+            font-size: 16px;
+            font-style: italic;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Current Price Box
+        st.markdown(f"""
+        <div class="prediction-box">
+            <h4 style="color: white; font-size: 20px;">Current Status</h4>
+            <p class="price-text">Current Price: <span class="highlight">${last_price:.2f}</span></p>
+            <p class="price-text">Trading Volume: <span class="highlight">{df['Volume'].iloc[-1]:,.0f}</span></p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Prediction Box
+        st.markdown(f"""
+        <div class="prediction-box">
+            <h4 style="color: white; font-size: 20px;">25-Day Forecast</h4>
+            <p class="price-text">Predicted Price: <span class="highlight">${predicted_price:.2f}</span></p>
+            <p class="price-text">Expected Change: <span class="highlight">{price_change:+.2f}%</span></p>
+            <p class="price-text">Price Range:</p>
+            <ul class="price-text">
+                <li>Upper Estimate: ${upper_price:.2f}</li>
+                <li>Lower Estimate: ${lower_price:.2f}</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Analysis Box
+        trend = "Upward" if price_change > 0 else "Downward"
+        confidence_range = ((upper_price - lower_price) / predicted_price) * 100
+        
+        st.markdown(f"""
+        <div class="prediction-box">
+            <h4 style="color: white; font-size: 20px;">Analysis</h4>
+            <p class="price-text">• Predicted Trend: <span class="highlight">{trend}</span></p>
+            <p class="price-text">• Confidence Range: <span class="highlight">±{confidence_range:.1f}%</span></p>
+            <p class="price-text">• Based on historical patterns and market indicators, the stock shows:</p>
+            <ul class="price-text">
+                <li>{'Strong' if abs(price_change) > 10 else 'Moderate'} {trend.lower()} momentum</li>
+                <li>{'High' if confidence_range > 20 else 'Moderate'} price volatility expected</li>
+            </ul>
+            <p class="warning">Note: These predictions are based on historical data and should not be the sole basis for investment decisions.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Disclaimer with improved fonts
+    st.markdown("""
+    <div style='background-color: rgba(0,0,0,0.5); padding: 20px; border-radius: 5px; margin-top: 30px;'>
+        <p style='color: white; font-size: 16px; font-family: Arial, sans-serif;'>
+            This analysis is based on historical data and technical indicators. 
+            Past performance is not indicative of future results. 
+            Please conduct your own research before making investment decisions.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
