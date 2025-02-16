@@ -78,17 +78,28 @@ def plot_stock_data(df, symbol):
     return fig
 
 def create_prophet_model(df):
-    prophet_df = pd.DataFrame()
-    prophet_df['ds'] = df.index
-    prophet_df['y'] = df['Close']
-    
-    model = Prophet(daily_seasonality=True)
-    model.fit(prophet_df)
-    
-    future_dates = model.make_future_dataframe(periods=25)
-    forecast = model.predict(future_dates)
-    
-    return forecast
+    try:
+        df = df.dropna()
+        if len(df) < 2:
+            return None
+
+        prophet_df = pd.DataFrame()
+        prophet_df['ds'] = df.index
+        prophet_df['y'] = df['Close']
+        
+        if len(prophet_df.dropna()) < 2:
+            return None
+
+        model = Prophet(daily_seasonality=True)
+        model.fit(prophet_df)
+        
+        future_dates = model.make_future_dataframe(periods=25)
+        forecast = model.predict(future_dates)
+        
+        return forecast
+    except Exception as e:
+        st.error(f"Error creating prediction model: {str(e)}")
+        return None
 
 def show_stock_page(symbol):
     st.markdown("""
@@ -217,31 +228,34 @@ def show_stock_page(symbol):
     with tabs[2]:
         st.markdown('<h3 style="font-size: 24px;">25-Day Price Prediction</h3>', unsafe_allow_html=True)
         
-        last_price = df['Close'].iloc[-1]
-        forecast_price = forecast['yhat'].iloc[-1]
-        price_change = ((forecast_price - last_price) / last_price) * 100
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Current Price", f"${last_price:.2f}")
-        with col2:
-            st.metric("Predicted Price", f"${forecast_price:.2f}", f"{price_change:.1f}%")
-        
-        fig_forecast = go.Figure()
-        fig_forecast.add_trace(go.Scatter(x=df.index[-50:], y=df['Close'][-50:], name='Historical', line=dict(color='blue')))
-        fig_forecast.add_trace(go.Scatter(x=forecast['ds'][-25:], y=forecast['yhat'][-25:], name='Predicted', line=dict(color='red')))
-        fig_forecast.add_trace(go.Scatter(x=forecast['ds'][-25:], y=forecast['yhat_upper'][-25:], fill=None, line=dict(color='rgba(255,0,0,0.2)', width=0), showlegend=False))
-        fig_forecast.add_trace(go.Scatter(x=forecast['ds'][-25:], y=forecast['yhat_lower'][-25:], fill='tonexty', line=dict(color='rgba(255,0,0,0.2)', width=0), name='Confidence Interval'))
-        
-        fig_forecast.update_layout(
-            title=dict(text='Price Forecast'),
-            xaxis=dict(title=dict(text='Date')),
-            yaxis=dict(title=dict(text='Price (USD)')),
-            template='plotly_dark',
-            height=500
-        )
-        
-        st.plotly_chart(fig_forecast, use_container_width=True)
+        if forecast is not None:
+            last_price = df['Close'].iloc[-1]
+            forecast_price = forecast['yhat'].iloc[-1]
+            price_change = ((forecast_price - last_price) / last_price) * 100
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Current Price", f"${last_price:.2f}")
+            with col2:
+                st.metric("Predicted Price", f"${forecast_price:.2f}", f"{price_change:.1f}%")
+            
+            fig_forecast = go.Figure()
+            fig_forecast.add_trace(go.Scatter(x=df.index[-50:], y=df['Close'][-50:], name='Historical', line=dict(color='blue')))
+            fig_forecast.add_trace(go.Scatter(x=forecast['ds'][-25:], y=forecast['yhat'][-25:], name='Predicted', line=dict(color='red')))
+            fig_forecast.add_trace(go.Scatter(x=forecast['ds'][-25:], y=forecast['yhat_upper'][-25:], fill=None, line=dict(color='rgba(255,0,0,0.2)', width=0), showlegend=False))
+            fig_forecast.add_trace(go.Scatter(x=forecast['ds'][-25:], y=forecast['yhat_lower'][-25:], fill='tonexty', line=dict(color='rgba(255,0,0,0.2)', width=0), name='Confidence Interval'))
+            
+            fig_forecast.update_layout(
+                title=dict(text='Price Forecast'),
+                xaxis=dict(title=dict(text='Date')),
+                yaxis=dict(title=dict(text='Price (USD)')),
+                template='plotly_dark',
+                height=500
+            )
+            
+            st.plotly_chart(fig_forecast, use_container_width=True)
+        else:
+            st.warning("Unable to generate predictions due to insufficient data. This could be because the stock is too new or has missing data points.")
         
         st.markdown("""
         <div style="background-color: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px; margin-top: 20px;">
