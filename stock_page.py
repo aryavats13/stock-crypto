@@ -171,8 +171,6 @@ def create_prophet_model(df):
     return forecast
 
 def show_stock_page(symbol):
-    st.title('Stock Analysis and Prediction')
-    
     # Back to home button with better styling
     st.markdown("""
         <style>
@@ -188,24 +186,59 @@ def show_stock_page(symbol):
         st.session_state.page = 'home'
         st.rerun()
     
-    # Get stock data
+    # Get stock/crypto data
     stock = yf.Ticker(symbol)
     info = stock.info
     
-    # Display minimal company information in a clean layout
+    # Display title
     st.title(f"{info.get('longName', symbol)} ({symbol})")
+    
+    # Check if it's a cryptocurrency
+    is_crypto = symbol.endswith('-USD')
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(
-            "Price",
-            f"${info.get('currentPrice', 'N/A')}",
-            f"{info.get('regularMarketChangePercent', 0):.2f}%"
-        )
+        current_price = info.get('currentPrice', 'N/A')
+        if current_price != 'N/A':
+            price_display = f"${current_price:,.2f}"
+        else:
+            price_display = 'N/A'
+            
+        change_pct = info.get('regularMarketChangePercent', 0)
+        if isinstance(change_pct, (int, float)):
+            change_display = f"{change_pct:.2f}%"
+        else:
+            change_display = "N/A"
+            
+        st.metric("Price", price_display, change_display)
+    
     with col2:
-        st.metric("Sector", info.get('sector', 'N/A'))
+        if is_crypto:
+            st.metric("Market Cap", f"${info.get('marketCap', 0)/1e9:.2f}B")
+        else:
+            st.metric("Sector", info.get('sector', 'N/A'))
+    
     with col3:
-        st.metric("52W High", f"${info.get('fiftyTwoWeekHigh', 'N/A')}")
+        if is_crypto:
+            st.metric("24h Volume", f"${info.get('volume24Hr', 0)/1e6:.1f}M")
+        else:
+            high_52w = info.get('fiftyTwoWeekHigh', 'N/A')
+            if high_52w != 'N/A':
+                st.metric("52W High", f"${high_52w:,.2f}")
+            else:
+                st.metric("52W High", "N/A")
+    
+    # Brief description
+    if is_crypto:
+        st.write("**About:**")
+        descriptions = {
+            'BTC-USD': "Bitcoin is the first decentralized cryptocurrency. It's a digital currency that enables instant payments to anyone, anywhere in the world.",
+            'ETH-USD': "Ethereum is a decentralized platform that runs smart contracts. It's both a cryptocurrency and a platform for decentralized applications.",
+            'DOGE-USD': "Dogecoin started as a meme-inspired cryptocurrency but has grown into a significant digital currency with a strong community.",
+            'XRP-USD': "XRP is a digital asset built for payments. It enables fast, low-cost international money transfers.",
+            'SOL-USD': "Solana is a high-performance blockchain platform known for its fast processing speeds and low transaction costs."
+        }
+        st.write(descriptions.get(symbol, "A digital currency using blockchain technology for secure, decentralized transactions."))
     
     st.divider()
     
