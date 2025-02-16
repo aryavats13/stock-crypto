@@ -7,8 +7,8 @@ prophet==1.1.4
 ta==0.10.2
 scikit-learn==1.2.2
 matplotlib==3.7.1
-pystan<3.0
-Cython>=0.29.33
+pystan==2.19.1.1
+Cython==0.29.33
 cmdstanpy==1.1.0
 convertdate>=2.3.2
 holidays>=0.25
